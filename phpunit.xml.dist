@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- PHPUnit configuration file with new format for PHPUnit 9.3+ -->
+<!-- PHPUnit configuration file with new format for PHPUnit 9.6+ -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         backupGlobals="false"
-         backupStaticAttributes="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          cacheResult="false"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
          colors="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+         convertDeprecationsToExceptions="true">
     <testsuites>
         <testsuite name="React.MySQL Test Suite">
             <directory>./tests/</directory>
@@ -29,5 +23,11 @@
         <env name="DB_USER" value="test"/>
         <env name="DB_PASSWD" value="test"/>
         <env name="DB_DBNAME" value="test"/>
+        <ini name="error_reporting" value="-1" />
+        <!-- Evaluate assertions, requires running with "php -d zend.assertions=1 vendor/bin/phpunit" -->
+        <!-- <ini name="zend.assertions" value="1" /> -->
+        <ini name="assert.active" value="1" />
+        <ini name="assert.exception" value="1" />
+        <ini name="assert.bail" value="0" />
     </php>
 </phpunit>

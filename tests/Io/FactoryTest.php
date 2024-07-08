@@ -1,12 +1,13 @@
 <?php
 
-namespace React\Tests\MySQL;
+namespace React\Tests\Mysql\Io;
 
 use React\EventLoop\Loop;
-use React\MySQL\ConnectionInterface;
-use React\MySQL\Factory;
-use React\Socket\SocketServer;
+use React\Mysql\Io\Connection;
+use React\Mysql\Io\Factory;
 use React\Promise\Promise;
+use React\Socket\SocketServer;
+use React\Tests\Mysql\BaseTestCase;
 
 class FactoryTest extends BaseTestCase
 {
@@ -274,12 +275,12 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->quit()->then(function () {
                 echo 'closed.';
             });
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -291,12 +292,12 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString(['dbname' => '']);
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->quit()->then(function () {
                 echo 'closed.';
             });
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -308,12 +309,12 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString() . '?timeout=-1';
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->quit()->then(function () {
                 echo 'closed.';
             });
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -325,7 +326,7 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->ping()->then(function () use ($connection) {
                 echo 'ping.';
@@ -333,8 +334,7 @@ class FactoryTest extends BaseTestCase
                     echo 'closed.';
                 });
             });
-
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -346,7 +346,7 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->ping()->then(function () {
                 echo 'ping.';
@@ -354,27 +354,29 @@ class FactoryTest extends BaseTestCase
             $connection->quit()->then(function () {
                 echo 'closed.';
             });
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
 
     public function testConnectWithValidAuthQuitOnlyOnce()
     {
-        $this->expectOutputString('connected.closed.');
+        $this->expectOutputString('connected.rejected.closed.');
 
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->quit()->then(function () {
                 echo 'closed.';
             });
             $connection->quit()->then(function () {
-                echo 'closed.';
+                echo 'never reached.';
+            }, function () {
+                echo 'rejected.';
             });
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -386,7 +388,7 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->on('close', function () {
                 echo 'closed.';
@@ -397,7 +399,7 @@ class FactoryTest extends BaseTestCase
 
             $connection->close();
             $connection->close();
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -409,7 +411,7 @@ class FactoryTest extends BaseTestCase
         $factory = new Factory();
 
         $uri = $this->getConnectionString();
-        $factory->createConnection($uri)->then(function (ConnectionInterface $connection) {
+        $factory->createConnection($uri)->then(function (Connection $connection) {
             echo 'connected.';
             $connection->on('close', function () {
                 echo 'closed.';
@@ -425,7 +427,7 @@ class FactoryTest extends BaseTestCase
                 echo 'aborted queued (' . $e->getMessage() . ').';
             });
             $connection->close();
-        }, 'printf')->then(null, 'printf');
+        });
 
         Loop::run();
     }
@@ -560,91 +562,5 @@ class FactoryTest extends BaseTestCase
                 })
             )
         ));
-    }
-
-    public function testConnectLazyWithAnyAuthWillQuitWithoutRunning()
-    {
-        $this->expectOutputString('closed.');
-
-        $factory = new Factory();
-
-        $uri = 'mysql://random:pass@host';
-        $connection = $factory->createLazyConnection($uri);
-
-        $connection->quit()->then(function () {
-            echo 'closed.';
-        });
-    }
-
-    public function testConnectLazyWithValidAuthWillRunUntilQuitAfterPing()
-    {
-        $this->expectOutputString('closed.');
-
-        $factory = new Factory();
-
-        $uri = $this->getConnectionString();
-        $connection = $factory->createLazyConnection($uri);
-
-        $connection->ping();
-
-        $connection->quit()->then(function () {
-            echo 'closed.';
-        });
-
-        Loop::run();
-    }
-
-    /**
-     * @doesNotPerformAssertions
-     */
-    public function testConnectLazyWithValidAuthWillRunUntilIdleTimerAfterPingEvenWithoutQuit()
-    {
-        $factory = new Factory();
-
-        $uri = $this->getConnectionString() . '?idle=0';
-        $connection = $factory->createLazyConnection($uri);
-
-        $connection->ping();
-
-        Loop::run();
-    }
-
-    public function testConnectLazyWithInvalidAuthWillRejectPingButWillNotEmitErrorOrClose()
-    {
-        $factory = new Factory();
-
-        $uri = $this->getConnectionString(['passwd' => 'invalidpass']);
-        $connection = $factory->createLazyConnection($uri);
-
-        $connection->on('error', $this->expectCallableNever());
-        $connection->on('close', $this->expectCallableNever());
-
-        $connection->ping()->then(null, $this->expectCallableOnce());
-
-        Loop::run();
-    }
-
-    public function testConnectLazyWithValidAuthWillPingBeforeQuitButNotAfter()
-    {
-        $this->expectOutputString('ping.closed.');
-
-        $factory = new Factory();
-
-        $uri = $this->getConnectionString();
-        $connection = $factory->createLazyConnection($uri);
-
-        $connection->ping()->then(function () {
-            echo 'ping.';
-        });
-
-        $connection->quit()->then(function () {
-            echo 'closed.';
-        });
-
-        $connection->ping()->then(function () {
-            echo 'never reached';
-        });
-
-        Loop::run();
     }
 }

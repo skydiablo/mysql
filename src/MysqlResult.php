@@ -1,8 +1,8 @@
 <?php
 
-namespace React\MySQL;
+namespace React\Mysql;
 
-class QueryResult
+class MysqlResult
 {
     /**
      * last inserted ID (if any)

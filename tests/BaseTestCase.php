@@ -1,11 +1,11 @@
 <?php
 
-namespace React\Tests\MySQL;
+namespace React\Tests\Mysql;
 
 use PHPUnit\Framework\TestCase;
 use React\EventLoop\LoopInterface;
-use React\MySQL\ConnectionInterface;
-use React\MySQL\Factory;
+use React\Mysql\Io\Connection;
+use React\Mysql\Io\Factory;
 
 class BaseTestCase extends TestCase
 {
@@ -30,14 +30,14 @@ class BaseTestCase extends TestCase
 
     /**
      * @param LoopInterface $loop
-     * @return ConnectionInterface
+     * @return Connection
      */
     protected function createConnection(LoopInterface $loop)
     {
         $factory = new Factory($loop);
         $promise = $factory->createConnection($this->getConnectionString());
 
-        return \Clue\React\Block\await($promise, $loop, 10.0);
+        return \React\Async\await(\React\Promise\Timer\timeout($promise, 10.0));
     }
 
     protected function getDataTable()

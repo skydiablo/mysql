@@ -1,9 +1,9 @@
 <?php
 
-namespace React\MySQL\Io;
+namespace React\Mysql\Io;
 
 use Evenement\EventEmitter;
-use React\MySQL\Commands\QueryCommand;
+use React\Mysql\Commands\QueryCommand;
 use React\Socket\ConnectionInterface;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\Util;
@@ -15,7 +15,6 @@ use React\Stream\WritableStreamInterface;
  */
 class QueryStream extends EventEmitter implements ReadableStreamInterface
 {
-    private $query;
     private $connection;
     private $started = false;
     private $closed = false;
@@ -23,7 +22,6 @@ class QueryStream extends EventEmitter implements ReadableStreamInterface
 
     public function __construct(QueryCommand $command, ConnectionInterface $connection)
     {
-        $this->command = $command;
         $this->connection = $connection;
 
         // forward result set rows until result set end

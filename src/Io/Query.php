@@ -1,6 +1,6 @@
 <?php
 
-namespace React\MySQL\Io;
+namespace React\Mysql\Io;
 
 /**
  * @internal
@@ -25,7 +25,7 @@ class Query
      * as long as this class is only used internally for the `query()` method.
      *
      * @var array<string,string>
-     * @see \React\MySQL\Commands\AuthenticateCommand::$charsetMap
+     * @see \React\Mysql\Commands\AuthenticateCommand::$charsetMap
      */
     private $escapeChars = [
             //"\x00"   => "\\0",
@@ -47,7 +47,7 @@ class Query
     }
 
     /**
-     * Binding params for the query, mutiple arguments support.
+     * Binding params for the query, multiple arguments support.
      *
      * @param  mixed              $param
      * @return self
@@ -69,7 +69,7 @@ class Query
     }
 
     /**
-     * Binding params for the query, mutiple arguments support.
+     * Binding params for the query, multiple arguments support.
      *
      * @param  mixed              $param
      * @return self
@@ -116,7 +116,7 @@ class Query
                 $value = 'NULL';
                 break;
             default:
-                throw new \InvalidArgumentException(sprintf('Not supportted value type of %s.', $type));
+                throw new \InvalidArgumentException(sprintf('Not supported value type of %s.', $type));
                 break;
         }
 

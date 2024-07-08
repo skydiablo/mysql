@@ -1,9 +1,9 @@
 <?php
 
-namespace React\MySQL\Commands;
+namespace React\Mysql\Commands;
 
-use React\MySQL\Io\Buffer;
-use React\MySQL\Io\Constants;
+use React\Mysql\Io\Buffer;
+use React\Mysql\Io\Constants;
 
 /**
  * @internal
@@ -31,7 +31,7 @@ class AuthenticateCommand extends AbstractCommand
      *
      * @var array<string,int>
      * @see self::$charsetNumber
-     * @see \React\MySQL\Io\Query::$escapeChars
+     * @see \React\Mysql\Io\Query::$escapeChars
      */
     private static $charsetMap = [
         'latin1' => 8,
@@ -51,8 +51,13 @@ class AuthenticateCommand extends AbstractCommand
      * @param string $charset
      * @throws \InvalidArgumentException for invalid/unknown charset name
      */
-    public function __construct($user, $passwd, $dbname, $charset)
-    {
+    public function __construct(
+        $user,
+        #[\SensitiveParameter]
+        $passwd,
+        $dbname,
+        $charset
+    ) {
         if (!isset(self::$charsetMap[$charset])) {
             throw new \InvalidArgumentException('Unsupported charset selected');
         }

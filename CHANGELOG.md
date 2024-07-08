@@ -1,5 +1,95 @@
 # Changelog
 
+## 0.6.0 (2023-11-10)
+
+*   Feature: Improve Promise v3 support and use template types.
+    (#183 and #178 by @clue)
+
+*   Feature: Full PHP 8.3 compatibility.
+    (#180 by @clue)
+
+*   Feature / BC break: Update default charset encoding to `utf8mb4` for full UTF-8 support.
+    (#165 by @clue)
+
+    This feature updates the MySQL client to use `utf8mb4` as the default charset
+    encoding for full UTF-8 support instead of the legacy `utf8mb3` charset encoding.
+    For legacy reasons you can still change this to use a different ASCII-compatible
+    charset encoding like this:
+
+    ```php
+    $factory->createConnection('localhost?charset=utf8mb4');
+    ```
+
+*   Feature: Reduce default idle time to 1ms.
+    (#182 by @clue)
+
+    The idle time defines the time the client is willing to keep the underlying
+    connection alive before automatically closing it. The default idle time was
+    previously 60s and can be configured for more specific requirements like this:
+
+    ```php
+    $factory->createConnection('localhost?idle=10.0');
+    ```
+
+*   Minor documentation improvements.
+    (#184 by @yadaiio)
+
+*   Improve test suite, update to use reactphp/async and report failed assertions.
+    (#164 and #170 by @clue, #163 by @dinooo13 and #181 by @SimonFrings)
+
+## 0.5.7 (2022-09-15)
+
+*   Feature: Full support for PHP 8.2.
+    (#161 by @clue)
+
+*   Feature: Mark passwords and URIs as `#[\SensitiveParameter]` (PHP 8.2+).
+    (#162 by @clue)
+
+*   Feature: Forward compatibility with upcoming Promise v3.
+    (#157 by @clue)
+
+*   Feature / Fix: Improve protocol parser, emit parser errors and close invalid connections.
+    (#158 and #159 by @clue)
+
+*   Improve test suite, fix legacy HHVM build by downgrading Composer.
+    (#160 by @clue)
+
+## 0.5.6 (2021-12-14)
+
+*   Feature: Support optional `charset` parameter for full UTF-8 support (`utf8mb4`).
+    (#135 by @clue)
+
+    ```php
+    $db = $factory->createLazyConnection('localhost?charset=utf8mb4');
+    ```
+
+*   Feature: Improve error reporting, include MySQL URI and socket error codes in all connection errors.
+    (#141 by @clue and #138 by @SimonFrings)
+
+    For most common use cases this means that simply reporting the `Exception`
+    message should give the most relevant details for any connection issues:
+
+    ```php
+    $db->query($sql)->then(function (React\MySQL\QueryResult $result) {
+        // …
+    }, function (Exception $e) {
+        echo 'Error:' . $e->getMessage() . PHP_EOL;
+    });
+    ```
+
+*   Feature: Full support for PHP 8.1 release.
+    (#150 by @clue)
+
+*   Feature: Provide limited support for `NO_BACKSLASH_ESCAPES` SQL mode.
+    (#139 by @clue)
+
+*   Update project dependencies, simplify socket usage, and improve documentation.
+    (#136 and #137 by @SimonFrings)
+
+*   Improve test suite and add `.gitattributes` to exclude dev files from exports.
+    Run tests on PHPUnit 9 and PHP 8 and clean up test suite.
+    (#142 and #143 by @SimonFrings)
+
 ## 0.5.5 (2021-07-19)
 
 *   Feature: Simplify usage by supporting new default loop.
@@ -77,7 +167,7 @@ using the new lazy connections as detailed below.
     From a consumer side this means that you can start sending queries to the
     database right away while the underlying connection may still be
     outstanding. Because creating this underlying connection may take some
-    time, it will enqueue all oustanding commands and will ensure that all
+    time, it will enqueue all outstanding commands and will ensure that all
     commands will be executed in correct order once the connection is ready.
     In other words, this "virtual" connection behaves just like a "real"
     connection as described in the `ConnectionInterface` and frees you from
@@ -123,7 +213,7 @@ have to take care of when updating from an older version.
     $connection = new Connection($loop, $options);
     $connection->connect(function (?Exception $error, $connection) {
         if ($error) {
-            // an error occured while trying to connect or authorize client
+            // an error occurred while trying to connect or authorize client
         } else {
             // client connection established (and authenticated)
         }
@@ -136,7 +226,7 @@ have to take care of when updating from an older version.
             // client connection established (and authenticated)
         },
         function (Exception $e) {
-            // an error occured while trying to connect or authorize client
+            // an error occurred while trying to connect or authorize client
         }
     );
     ```
